@@ -17,4 +17,6 @@ php css_flip.php c:\fluxbb\style\ c:\fluxbb\style_rtl\ -noflip
 
 or you can use it run time fliping, see demo folder.
 
+Please take the source from tags instead of the master branch for stable version.
+
 zaher@parmaja.com
