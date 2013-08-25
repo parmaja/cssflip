@@ -57,7 +57,7 @@ function str_explode($c, $s)
   return $a;
 }
 
-  class CssFile {
+  class CssParser {
     var $blocks = array();
     var $block;
     var $comment = '';
@@ -87,141 +87,6 @@ function str_explode($c, $s)
     {
       $this->write($this->text);
       $this->text = '';
-    }
-
-    function exchange($value)   // if it has 4 value i exchange the 2 and 4 values
-    {
-      $a=explode(' ', $value);
-      if (count($a) == 4)
-      {
-        $t=$a[3];
-        $a[3]=$a[1];
-        $a[1]=$t;
-      }
-      else
-        return $value;
-      
-      $r='';
-      foreach ($a as $v)
-      {
-//        $v=use_case($v);
-        $r=$r.' '.$v;
-      }
-      return $r;
-    }
-
-    function change_value($value)
-    {
-      $a=explode(' ', $value);
-      $r='';
-      foreach ($a as $v)
-      {
-        $v=strtoupper($v);
-        if ($v == 'RIGHT')
-          $v= 'LEFT';
-        else if ($v == 'LEFT')
-          $v= 'RIGHT';
-          
-        if (empty($r))
-          $r=use_case($v);
-        else
-          $r=$r.' '.use_case($v);
-      }
-      return $r;
-    }
-
-    function flip_value($name, $value)
-    {
-      global $USE_NOFLIP;
-      $new_value = trim($value);
-      $value = strtoupper($new_value);
-      $name = strtoupper($name);
-      if ($USE_NOFLIP === false) {
-        if ($name == 'DIRECTION')
-        {
-          if ($value=='LTR')
-            $new_value=use_case('RTL');
-          else if ($value=='RTL')
-            $new_value=use_case('LTR');
-        }
-        //BORDER
-        else if ($name == 'LEFT')
-          $name='RIGHT';
-        else if ($name == 'RIGHT')
-          $name='LEFT';
-        else if ($name == 'BORDER-RIGHT')
-          $name='BORDER-LEFT';
-        else if ($name == 'BORDER-LEFT')
-          $name='BORDER-RIGHT';
-        else if ($name == 'BORDER-LEFT-WIDTH')
-          $name='BORDER-RIGHT-WIDTH';
-        else if ($name == 'BORDER-RIGHT-WIDTH')
-          $name='BORDER-LEFT-WIDTH';
-        else if ($name == 'BORDER-LEFT-STYLE')
-          $name='BORDER-RIGHT-STYLE';
-        else if ($name == 'BORDER-RIGHT-STYLE')
-          $name='BORDER-LEFT-STYLE';
-        else if ($name == 'BORDER-LEFT-COLOR')
-          $name='BORDER-RIGHT-COLOR';
-        else if ($name == 'BORDER-RIGHT-COLOR')
-          $name='BORDER-LEFT-COLOR';
-        else if ($name == 'BORDER-STYLE')
-          $new_value=$this->exchange($new_value);
-        else if ($name == 'BORDER-WIDTH')
-          $new_value=$this->exchange($new_value);
-        else if ($name == 'BORDER-COLOR')
-          $new_value=$this->exchange($new_value);
-        //MARGIN
-        else if ($name == 'MARGIN')
-          $new_value=$this->exchange($new_value);
-        else if ($name == 'MARGIN-RIGHT')
-          $name='MARGIN-LEFT';
-        else if ($name == 'MARGIN-LEFT')
-          $name='MARGIN-RIGHT';
-        //PADDING
-        else if ($name == 'PADDING')
-          $new_value=$this->exchange($new_value);
-        else if ($name == 'PADDING-RIGHT')
-          $name='PADDING-LEFT';
-        else if ($name == 'PADDING-LEFT')
-          $name='PADDING-RIGHT';
-        //OTHERS
-        else if ($name == 'BACKGROUND')
-          $new_value=$this->change_value($new_value);
-        else if ($name == 'BACKGROUND-POSITION')
-          $new_value=$this->change_value($new_value);
-        else if ($name == 'FLOAT')
-          $new_value=$this->change_value($new_value);
-        else if ($name == 'TEXT-ALIGN')
-          $new_value=$this->change_value($new_value);
-        else if ($name == 'CLEAR')
-          $new_value=$this->change_value($new_value);
-        else if ($name == 'BORDER-COLOR')
-          $new_value=$this->exchange($new_value);
-        else {
-          if (strpos($name, 'LEFT')!==false)
-          {
-            echo $name.': '.$value."\n";
-            $this->left_count++;
-          }
-          if (strpos($name, 'RIGHT')!==false)
-          {
-            echo $name.': '.$value."\n";
-            $this->right_count++;
-          }
-          if (strpos($value, 'LEFT')!==false)
-          {
-            echo $name.': '.$value."\n";
-            $this->left_count++;
-          }
-          if (strpos($value, 'RIGHT')!==false)
-          {
-            echo $name.': '.$value."\n";
-            $this->right_count++;
-          }
-        }
-      }
-      return use_case($name).': '.$new_value;
     }
 
     function flush_properties()
@@ -254,6 +119,10 @@ function str_explode($c, $s)
       $this->properties = array();
     }
 
+    function add_value($name, $value) {    //virtual
+      return use_case($name).': '.use_case($value);
+    }
+
     function add_property()
     {
       global $USE_EOL;
@@ -264,7 +133,8 @@ function str_explode($c, $s)
         list($name, $value)=str_explode(':', $this->text);
         $name=trim($name);
         $value=trim($value);
-        $this->properties[] = $this->flip_value($name, $value);
+
+        $this->properties[] = $this->add_value($name, $value);
       }
       $this->text = '';
     }
@@ -368,12 +238,154 @@ function str_explode($c, $s)
     }
   }
 
+class CssFlip extends CssParser {
+
+    function add_value($name, $value) {
+      return $this->flip_value($name, $value);
+    }
+
+    function exchange($value)   // if it has 4 value i exchange the 2 and 4 values
+    {
+      $a=explode(' ', $value);
+      if (count($a) == 4)
+      {
+        $t=$a[3];
+        $a[3]=$a[1];
+        $a[1]=$t;
+      }
+      else
+        return $value;
+
+      $r='';
+      foreach ($a as $v)
+      {
+//        $v=use_case($v);
+        $r=$r.' '.$v;
+      }
+      return $r;
+    }
+
+    function change_value($value)
+    {
+      $a=explode(' ', $value);
+      $r='';
+      foreach ($a as $v)
+      {
+        $v=strtoupper($v);
+        if ($v == 'RIGHT')
+          $v= 'LEFT';
+        else if ($v == 'LEFT')
+          $v= 'RIGHT';
+
+        if (empty($r))
+          $r=use_case($v);
+        else
+          $r=$r.' '.use_case($v);
+      }
+      return $r;
+    }
+
+    function flip_value($name, $value)
+    {
+      global $USE_NOFLIP;
+      $new_value = trim($value);
+      $value = strtoupper($new_value);
+      $name = strtoupper($name);
+      if ($USE_NOFLIP === false) {
+        if ($name == 'DIRECTION')
+        {
+          if ($value=='LTR')
+            $new_value=use_case('RTL');
+          else if ($value=='RTL')
+            $new_value=use_case('LTR');
+        }
+        //BORDER
+        else if ($name == 'LEFT')
+          $name='RIGHT';
+        else if ($name == 'RIGHT')
+          $name='LEFT';
+        else if ($name == 'BORDER-RIGHT')
+          $name='BORDER-LEFT';
+        else if ($name == 'BORDER-LEFT')
+          $name='BORDER-RIGHT';
+        else if ($name == 'BORDER-LEFT-WIDTH')
+          $name='BORDER-RIGHT-WIDTH';
+        else if ($name == 'BORDER-RIGHT-WIDTH')
+          $name='BORDER-LEFT-WIDTH';
+        else if ($name == 'BORDER-LEFT-STYLE')
+          $name='BORDER-RIGHT-STYLE';
+        else if ($name == 'BORDER-RIGHT-STYLE')
+          $name='BORDER-LEFT-STYLE';
+        else if ($name == 'BORDER-LEFT-COLOR')
+          $name='BORDER-RIGHT-COLOR';
+        else if ($name == 'BORDER-RIGHT-COLOR')
+          $name='BORDER-LEFT-COLOR';
+        else if ($name == 'BORDER-STYLE')
+          $new_value=$this->exchange($new_value);
+        else if ($name == 'BORDER-WIDTH')
+          $new_value=$this->exchange($new_value);
+        else if ($name == 'BORDER-COLOR')
+          $new_value=$this->exchange($new_value);
+        //MARGIN
+        else if ($name == 'MARGIN')
+          $new_value=$this->exchange($new_value);
+        else if ($name == 'MARGIN-RIGHT')
+          $name='MARGIN-LEFT';
+        else if ($name == 'MARGIN-LEFT')
+          $name='MARGIN-RIGHT';
+        //PADDING
+        else if ($name == 'PADDING')
+          $new_value=$this->exchange($new_value);
+        else if ($name == 'PADDING-RIGHT')
+          $name='PADDING-LEFT';
+        else if ($name == 'PADDING-LEFT')
+          $name='PADDING-RIGHT';
+        //OTHERS
+        else if ($name == 'BACKGROUND')
+          $new_value=$this->change_value($new_value);
+        else if ($name == 'BACKGROUND-POSITION')
+          $new_value=$this->change_value($new_value);
+        else if ($name == 'FLOAT')
+          $new_value=$this->change_value($new_value);
+        else if ($name == 'TEXT-ALIGN')
+          $new_value=$this->change_value($new_value);
+        else if ($name == 'CLEAR')
+          $new_value=$this->change_value($new_value);
+        else if ($name == 'BORDER-COLOR')
+          $new_value=$this->exchange($new_value);
+        else {
+          if (strpos($name, 'LEFT')!==false)
+          {
+            echo $name.': '.$value."\n";
+            $this->left_count++;
+          }
+          if (strpos($name, 'RIGHT')!==false)
+          {
+            echo $name.': '.$value."\n";
+            $this->right_count++;
+          }
+          if (strpos($value, 'LEFT')!==false)
+          {
+            echo $name.': '.$value."\n";
+            $this->left_count++;
+          }
+          if (strpos($value, 'RIGHT')!==false)
+          {
+            echo $name.': '.$value."\n";
+            $this->right_count++;
+          }
+        }
+      }
+      return use_case($name).': '.$new_value;
+    }
+}
+
 function css_switch_file($file_in, $file_out = '')
 {
   $f = fopen($file_in, 'r');
   if ($f!==false)
   {
-    $css = new CssFile;
+    $css = new CssParser;
     if (!empty($file_out))
       $css->output = fopen($file_out, 'w');
     $css->open();
