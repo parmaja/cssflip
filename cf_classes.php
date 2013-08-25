@@ -286,7 +286,6 @@ function str_explode($c, $s)
     }
 
     function parse($line) {
-//      DebugBreak();
       $i = 0;
       while ($i < strlen($line))
       {
