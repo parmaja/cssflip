@@ -1,36 +1,24 @@
 <?php
-/***********************************************************************
+/**
+*
+* CSS Flip
+*
+* @license   LGPL (http://www.gnu.org/licenses/gpl.html)
+* @url			 http://www.github.com/parmaja/cssflip
+* @author    Zaher Dirkey <zaher at parmaja dot com>
+*
+*/
 
-  Copyright ($c) 2009  zaher dirkey (zaher@parmaja.com)
+define('S_TEXT', 0);
+define('S_STATMENT', 1);
+define('S_SELECTOR', 2);
+define('S_PROPERTY', 3);
+define('S_COMMENT', 4);
+define('S_STRING', 5);
 
-  This file is part of cssFlip.
-
-  cssFlip is free software; you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
-  by the Free Software Foundation;
-
-  cssFlip is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-  MA  02111-1307  USA
-
-************************************************************************/
-
-  define('S_TEXT', 0);
-  define('S_STATMENT', 1);
-  define('S_SELECTOR', 2);
-  define('S_PROPERTY', 3);
-  define('S_COMMENT', 4);
-  define('S_STRING', 5);
-  
-  define('U_CASE_NONE', 0);
-  define('U_CASE_UPPER', 1);
-  define('U_CASE_LOWER', 2);
+define('U_CASE_NONE', 0);
+define('U_CASE_UPPER', 1);
+define('U_CASE_LOWER', 2);
 
 //default values
 $USE_CASE= U_CASE_NONE;
@@ -68,6 +56,7 @@ function str_explode($c, $s)
   }
   return $a;
 }
+
   class CssFile {
     var $blocks = array();
     var $block;
